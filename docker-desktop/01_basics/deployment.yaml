@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: gallery
-        image: rsdemos.azurecr.io/picture-gallery:1.0.1-linux-arm64
+        image: rsdemos.azurecr.io/picture-gallery:1.0.1
         imagePullPolicy: Always
         ports:
         - containerPort: 80

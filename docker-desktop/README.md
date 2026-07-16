@@ -1,0 +1,2 @@
+# Docker Desktop Kubernetes Demo
+This folder contains demos that are designed to be run on a Kubernetes cluster created through Docker Desktop using Kind. In case you want to run the demos in a Minikube cluster instead, please refer to the [Minikube Kubernetes Demo](../minikube/README.md) folder.
