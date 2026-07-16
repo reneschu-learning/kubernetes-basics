@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gallery-dep
+spec:
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: '30%'       # maximum number of additional Pods during the update (e.g., 3 Pods + 30% maxSurge => maximum 4 Pods allowed)
+      maxUnavailable: 30%   # maximum number of unavailable Pods during the update (e.g., 3 Pods + 30% maxUnavailable => minimum 2 Pods allowed)
+  selector:
+    matchLabels:
+      app: gallery
+  template:
+    metadata:
+      labels:
+        app: gallery
+    spec:
+      containers:
+      - name: gallery
+        image: rsdemos.azurecr.io/picture-gallery:1.2.0-linux-arm64
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80

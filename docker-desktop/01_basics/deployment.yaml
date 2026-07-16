@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gallery-dep
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gallery
+  template:
+    metadata:
+      labels:
+        app: gallery
+    spec:
+      containers:
+      - name: gallery
+        image: rsdemos.azurecr.io/picture-gallery:1.0.1-linux-arm64
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80

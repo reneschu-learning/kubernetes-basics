@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gallery-svc
+spec:
+  selector:
+    app: gallery
+  ports:
+  - port: 80        # The port on which the service listens - on Docker Desktop, ensure that this port is not in use by the host machine
+    targetPort: 80  # The target port that is exposed by your POD(s)
