@@ -1,0 +1,2 @@
+# Minikube Kubernetes Demo
+This demo is designed to be run on a Kubernetes cluster created through Minikube. If you want to run the demos in a Docker Desktop cluster instead, please refer to the [Docker Desktop Kubernetes Demo](../docker-desktop/README.md) folder.

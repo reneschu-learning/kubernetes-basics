@@ -77,3 +77,10 @@ wget -qO- http://localhost:8080
 curl -s http://localhost:8080
 Invoke-WebRequest -Uri http://localhost:8080 -UseBasicParsing
 ```
+
+Clean up everything by deleting the blue-green Service and the two Deployments using the following command:
+
+```bash
+kubectl delete -f blue-green.yaml
+kubectl delete -f deployment.yaml
+```
