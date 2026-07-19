@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gallery-config-files
+data:
+  config.json: |-
+    {
+      "someKey": "someValue",
+      "answerToEverything": 42,
+      "bestCharacter": {
+        "name": "Arthur Dent",
+        "species": "Human"
+      }
+    }

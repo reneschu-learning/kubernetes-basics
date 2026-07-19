@@ -1,6 +1,8 @@
 # Kubernetes Basics Demo
 This repository contains demos describing the basics of Kubernetes. The repository contains two flavors of demos: one for Minikube and one for Docker Desktop.
 
+The demo uses several versions of a sample application called `picture-gallery`. You can find the source code of the application in [this](https://github.com/reneschu-learning/picture-gallery) repository. If you want to see the exact code that corresponds to the different versions used in the deployments, check out the version tags in the `picture-gallery` repository.
+
 ## Docker Desktop
 The Docker Desktop demos are designed to be run on a Kubernetes cluster created through Docker Desktop using Kind. If you haven't already done so, please install Docker Desktop and enable Kubernetes in the settings. Ensure that you are using Kind as the Kubernetes cluster provider and you set up three nodes.
 
