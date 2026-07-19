@@ -141,25 +141,34 @@ Then open a browser and navigate to `http://localhost:8080` (or follow the popup
 
 Remember, the data flow is as follows: the frontend application calls the backend API, which writes log messages to a file in the `emptyDir` volume. The `busybox` container reads the log file from the same `emptyDir` volume and displays the log messages in its logs. Thus, when you see the log message in the `busybox` container logs, it means that `emptyDir` is working as expected.
 
-Testing the `hostPath` volume is a bit more complicated as Docker Desktop does not allow you to directly access the host filesystem. However, we can connect to one of the backend Pods, check if the mounted file exists, and write some content to it:
+In order to test the `hostPath` volume, we need to connect directly to one of the Minikube hosts. First, check on which nodes the backend Pods run:
 
 ```bash
-# Connect to the backend Pod
-kubectl exec -it <backend-pod-name> -c backend -- /bin/sh
+kubectl get pods -o wide | grep backend
+```
 
-# Show the content of /conf; you should see the hostData.json file
-ls /conf
+After the IP address you see the node names (e.g., `minikube-m02` and `minikube-m03`). In Minikube, these nodes are Docker containers, so we can directly connect to one of them:
+
+```bash
+docker exec -it <node-name> /bin/bash
+```
+
+You are now attached to one of the nodes and can inspect and change its filesystem. Let's check that the file exists (it was created during the mount operation) and write some content into the file that is mounted by our Pods:
+
+```bash
+# Show the content of /tmp; you should see the hostData.json file
+ls /tmp
 
 # Write some content to the hostData.json file
-echo '{ "message": "Hello from hostPath volume!" }' > /conf/hostData.json
+echo '{ "message": "Hello from hostPath volume!" }' > /tmp/hostData.json
 
-# Exit the Pod
+# Exit the container
 exit
 ```
 
 Now refresh the web page's `Config` tab a couple times. You should sometimes see the content of the `hostData.json`. Why only sometimes? This is because the backend Deployment runs two replicas, which should be on different nodes. Since a `hostPath` volume is tied to a specific node, only the Pod running on the node where the file was created will be able to read it. The other Pod will not see the file, and thus you will see an empty value in the `Config` tab. This is why `hostPath` volumes are not suitable for production environments, as they do not provide data redundancy or high availability.
 
-Finally, let's delete everything again using the following command:
+Finally, let's delete everything again using the following command (remember to stop the proxy and the Minikube tunnel first):
 
 ```bash
 kubectl delete -f deployment-full.yaml
