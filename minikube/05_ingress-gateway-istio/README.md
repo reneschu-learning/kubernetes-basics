@@ -50,9 +50,17 @@ minikube addons disable ingress
 ## Gateway API and Istio
 The Gateway API is a new set of resources that provides a more expressive and extensible way to define ingress and routing rules in Kubernetes. It is designed to replace the Ingress resource and provide more advanced features such as traffic splitting, retries, and timeouts. Istio is a popular service mesh that provides advanced traffic management capabilities, including support for the Gateway API. In this lab, we will use Istio to expose our application through a Gateway resource, which is part of the Gateway API.
 
-Before we start, let's make sure that Istio is installed in our cluster. Minikube has a nice feature that allows you to enable Istio with a single command:
+Since the Gateway API CRDs are not installed by default, we need to install them manually. You can do this by running the following command:
 
 ```bash
+kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null || \
+  kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/experimental-install.yaml
+```
+
+Before we start, let's make sure that Istio is installed in our cluster. Minikube has a nice feature that allows you to enable Istio with a couple commands:
+
+```bash
+minikube addons enable istio-provisioner
 minikube addons enable istio
 ```
 
@@ -65,7 +73,19 @@ kubectl apply -f gateway.yaml
 kubectl apply -f http-route.yaml
 ```
 
-We are still using the same host name of `gallery.local`, so make sure that you still have it in your `hosts` file. If you are running on a local machine, open your browser and navigate to `http://gallery.local:8080/v4` to see the first version of the application, and `http://gallery.local:8080/v5` to see the second version. You should see different versions of the application being served through the same public IP address, with different paths for each version.
+Go to `k9s` and switch to the Services view. Note that the Istio Gateway is implemented in Minikube as a LoadBalancer Service, which does not have a public IP address yet. We know from previous labs that we can use the `minikube tunnel` command to create a tunnel to the LoadBalancer Service and assign it a public IP address. Run the command and check the status of the LoadBalancer Service again. You should see that it now has a public IP address assigned to it.
+
+We are still using the same host name of `gallery.local`, but it must now map to the external IP address of the Istio Gateway. Replace the IP in your `hosts` file. When running in a Codespace, you can do this by running the following command:
+
+```bash
+# Remove the last line from /etc/hosts to remove the old mapping
+head -n -1 /etc/hosts | sudo tee /etc/hosts >/dev/null
+
+# Add the new mapping to /etc/hosts
+echo "$(kubectl get svc gallery-gateway-istio -o jsonpath='{.status.loadBalancer.ingress[0].ip}') gallery.local" | sudo tee -a /etc/hosts
+```
+
+If you are running on a local machine, open your browser and navigate to `http://gallery.local:8080/v4` to see the first version of the application, and `http://gallery.local:8080/v5` to see the second version. You should see different versions of the application being served through the same public IP address, with different paths for each version.
 
 When running in a Codespace, you can use the `curl` command to see the response from the different Ingress paths:
 
@@ -74,7 +94,7 @@ curl -sL http://gallery.local:8080/v4 | grep "<title>"
 curl -sL http://gallery.local:8080/v5 | grep "<title>"
 ```
 
-Istio allows you to define more advanced routing rules, such as traffic splitting. Remember the canary deployment strategy? Let's build this using Istio. First, delete the existing resources:
+Istio allows you to define more advanced routing rules, such as traffic splitting. Remember the canary deployment strategy? Let's build this using Istio. First, delete the existing resources (stop the Minikube tunnel first):
 
 ```bash
 kubectl delete -f gateway.yaml
@@ -84,12 +104,17 @@ kubectl delete -f deployment.yaml
 
 Now take a look at the [http-route-canary.yaml](http-route-canary.yaml) file. Instead of routing based on the request path, we define multiple backends and assign weights to them. In this case, we route 90% of the traffic to the `gallery-svc-v4` Service and 10% of the traffic to the `gallery-svc-v5` Service. This allows us to gradually roll out the new version of our application and monitor its performance before fully switching over.
 
-Deploy the application and the Gateway resources by running the following command:
+Deploy the application and the Gateway resources, start the Minikube tunnel, and update the `hosts` file by running the following command:
 
 ```bash
 kubectl apply -f deployment-canary.yaml
 kubectl apply -f gateway.yaml
 kubectl apply -f http-route-canary.yaml
+minikube tunnel
+
+# In another terminal
+head -n -1 /etc/hosts | sudo tee /etc/hosts >/dev/null
+echo "$(kubectl get svc gallery-gateway-istio -o jsonpath='{.status.loadBalancer.ingress[0].ip}') gallery.local" | sudo tee -a /etc/hosts
 ```
 
 **Note:** The `deployment-canary.yaml` file is almost identical to the `deployment.yaml` file but doesn't set a custom `BASE_PATH` for the two versions as both of them now share the same path `/`.
@@ -116,6 +141,7 @@ If you want, you can also uninstall Istio by running:
 
 ```bash
 minikube addons disable istio
+minikube addons disable istio-provisioner
 ```
 
 In case you want to learn more about Istio, check out the [Istio documentation](https://istio.io/latest/docs/). It provides a lot of information about the features and capabilities of Istio, including traffic management, security, observability, and more.
