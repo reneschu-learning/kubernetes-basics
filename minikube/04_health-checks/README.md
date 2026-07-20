@@ -18,7 +18,16 @@ kubectl apply -f health-checks.yaml
 
 Switch to `k9s` and watch the Pods being created. You will see that the Pods are displayed in red with the status `RUNNING` but `0/1` being `READY`. This is because the startup probe is still running and has not completed successfully yet. Once the startup probe completes successfully, the Pods will change color and you will see `1/1` in the `READY` column. Switch to the Services view and view the Pods targeted by the `gallery-svc` Service.
 
-You can now browse to `http://localhost:8080` to see the application running. Switch to the `Config` tab. This version of the application has a checkbox at the bottom to bring it into an unhealthy state. Check the box and refresh the page. You should see an error message. Go back to `k9s`. You will see that one of the Pods in the service is marked in red and will not receive any traffic. When you now hard refresh the web page now, you should see the application running again because traffic is now routed to the two remaining healthy Pods. Note: sometimes it may take a few retries before your browser will connect to a healthy Pod.
+Let's take a look at the application. Create the Minikube tunnel and, if you are in Codespace, the proxy:
+
+```bash
+minikube tunnel
+
+# Codespace: in a second terminal, start the proxy for the frontend service
+socat TCP-LISTEN:8080,fork TCP:<external-ip frontend service>:8080
+```
+
+You can now browse to `http://localhost:8080` (or follow the popup) to see the application running. Switch to the `Config` tab. This version of the application has a checkbox at the bottom to bring it into an unhealthy state. Check the box and refresh the page. You should see an error message. Go back to `k9s`. You will see that one of the Pods in the service is marked in red and will not receive any traffic. When you now hard refresh the web page now, you should see the application running again because traffic is now routed to the two remaining healthy Pods. Note: sometimes it may take a few retries before your browser will connect to a healthy Pod.
 
 Switch to the Pods view again, run a describe command on the unhealthy Pod (`d` key), and toggle auto-refresh (`r` key). You will see that the readiness and liveness probes are failing and, after a few seconds, see the message that the container is being restarted. Once it started up, the startup probe will run again, and the Pod will become healthy again.
 
