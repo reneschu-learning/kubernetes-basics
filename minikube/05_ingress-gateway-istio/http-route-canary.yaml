@@ -1,0 +1,16 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gallery
+spec:
+  parentRefs:
+  - name: gallery-gateway
+  hostnames: ["gallery.local"]
+  rules:
+  - backendRefs:
+    - name: gallery-svc-v4
+      port: 80
+      weight: 90
+    - name: gallery-svc-v5
+      port: 80
+      weight: 10

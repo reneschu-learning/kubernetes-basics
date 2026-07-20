@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gallery
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: gallery.local
+    http:
+      paths:
+      - path: /v4
+        pathType: Prefix
+        backend:
+          service:
+            name: gallery-svc-v4
+            port:
+              number: 80
+      - path: /v5
+        pathType: Prefix
+        backend:
+          service:
+            name: gallery-svc-v5
+            port:
+              number: 80

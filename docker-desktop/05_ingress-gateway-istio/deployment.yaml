@@ -1,0 +1,227 @@
+# Config settings
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gallery-config
+data:
+  CONFIG_VAR1: Some value from ConfigMap
+  CONFIG_FILE: '/conf/config.json'
+  CONFIG_FILE_VOL: '/conf/hostData.json'
+  LOG_FILE: '/logs/log.txt'
+  BACKEND_SERVICE: 'http://backend-svc:8000'
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gallery-config-files
+data:
+  config.json: |-
+    {
+      "someKey": "someValue",
+      "answerToEverything": 42,
+      "bestCharacter": {
+        "name": "Arthur Dent",
+        "species": "Human"
+      }
+    }
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gallery-secrets
+data:
+  SECRET1: VGhlIHN1cGVyIHNlY3JldCBwYXNzd29yZCBpczogU3VwZXJTZWNyZXQxMjMh
+---
+# Frontend - v2.2.1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gallery-v4
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gallery
+      version: v4
+  template:
+    metadata:
+      labels:
+        app: gallery
+        version: v4
+    spec:
+      containers:
+      - name: gallery
+        image: rsdemos.azurecr.io/picture-gallery:2.2.1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        env:
+        - name: BASE_PATH
+          value: /v4
+        envFrom:
+        - configMapRef:
+            name: gallery-config
+        - secretRef:
+            name: gallery-secrets
+        volumeMounts:
+          - name: configmap-vol
+            mountPath: '/conf'
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 80
+          failureThreshold: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          failureThreshold: 3
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          failureThreshold: 2
+          periodSeconds: 3
+      volumes:
+        - name: configmap-vol
+          configMap:
+            name: gallery-config-files
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gallery-svc-v4
+spec:
+  type: ClusterIP
+  selector:
+    app: gallery
+    version: v4
+  ports:
+  - port: 80
+    targetPort: 80
+---
+# Frontend - v2.3.0
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gallery-v5
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gallery
+      version: v5
+  template:
+    metadata:
+      labels:
+        app: gallery
+        version: v5
+    spec:
+      containers:
+      - name: gallery
+        image: rsdemos.azurecr.io/picture-gallery:2.3.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        env:
+        - name: BASE_PATH
+          value: /v5
+        envFrom:
+        - configMapRef:
+            name: gallery-config
+        - secretRef:
+            name: gallery-secrets
+        volumeMounts:
+          - name: configmap-vol
+            mountPath: '/conf'
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 80
+          failureThreshold: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          failureThreshold: 3
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          failureThreshold: 2
+          periodSeconds: 3
+      volumes:
+        - name: configmap-vol
+          configMap:
+            name: gallery-config-files
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gallery-svc-v5
+spec:
+  type: ClusterIP
+  selector:
+    app: gallery
+    version: v5
+  ports:
+  - port: 80
+    targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gallery-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gallery-backend
+  template:
+    metadata:
+      labels:
+        app: gallery-backend
+    spec:
+      containers:
+      - name: backend
+        image: rsdemos.azurecr.io/picture-gallery-backend:1.0.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: gallery-config
+        volumeMounts:
+        - name: logs
+          mountPath: '/logs'
+        - name: content
+          mountPath: '/conf/hostData.json'
+      - name: busybox
+        image: busybox
+        command: ['sh', '-c', 'touch /logs/log.txt && tail -n+1 -F /logs/log.txt']
+        volumeMounts:
+        - name: logs
+          mountPath: '/logs'
+      volumes:
+      - name: logs
+        emptyDir: {}
+      - name: content
+        hostPath:
+          path: '/tmp/hostData.json'
+          type: FileOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-svc
+spec:
+  type: ClusterIP
+  selector:
+    app: gallery-backend
+  ports:
+  - port: 8000
+    targetPort: 8000
