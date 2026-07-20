@@ -20,7 +20,7 @@
 	"postCreateCommand": "bash .devcontainer/post-create.sh",
 
 	// Use 'postStartCommand' to start minikube automatically.
-	"postStartCommand": "nohup bash -c 'minikube start --nodes 3 &' > minikube.log 2>&1",
+	"postStartCommand": "nohup bash -c 'minikube start --memory=8192 --cpus=4 --nodes=3 &' > minikube.log 2>&1",
 
 	"customizations": {
 		"vscode": {

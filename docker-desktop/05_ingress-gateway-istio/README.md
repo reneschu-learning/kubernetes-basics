@@ -58,7 +58,7 @@ kubectl apply -f gateway.yaml
 kubectl apply -f http-route.yaml
 ```
 
-We are still using the same host name of `gallery.local`, so make sure that you still have it in your `hosts` file. Open your browser and navigate to `http://gallery.local/v4` to see the first version of the application, and `http://gallery.local/v5` to see the second version. You should see different versions of the application being served through the same public IP address, with different paths for each version.
+We are still using the same host name of `gallery.local`, so make sure that you still have it in your `hosts` file. Open your browser and navigate to `http://gallery.local:8080/v4` to see the first version of the application, and `http://gallery.local:8080/v5` to see the second version. You should see different versions of the application being served through the same public IP address, with different paths for each version.
 
 Istio allows you to define more advanced routing rules, such as traffic splitting. Remember the canary deployment strategy? Let's build this using Istio. First, delete the existing resources:
 
@@ -83,7 +83,7 @@ kubectl apply -f http-route-canary.yaml
 Open your browser and navigate to `http://gallery.local:8080`. You will see one version of the application being served. When you refresh the page multiple times, you will eventually see the other version of the application being served as well. This is because 90% of the traffic is routed to the `gallery-svc-v4` Service and 10% of the traffic is routed to the `gallery-svc-v5` Service. To verify this, let's use `curl` to make multiple requests to the application and see the response:
 
 ```bash
-for i in {1..100}; do curl -s http://gallery.local:8080 | grep "<title>"; done
+for i in {1..100}; do curl -sL http://gallery.local:8080 | grep "<title>"; done
 ```
 
 You should see that roughly 90% of the requests return the title of the first version of the application and roughly 10% of the requests return the title of the second version of the application. This is a simple example of how to use Istio and the Gateway API to implement a canary deployment strategy.

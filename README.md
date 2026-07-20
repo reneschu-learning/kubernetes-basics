@@ -19,7 +19,9 @@ minikube start --nodes=3
 ```
 
 ### Minikube in GitHub Codespaces
-To run the Minikube demos in GitHub Codespaces, you can use the provided `devcontainer.json` configuration. This configuration sets up a development environment with Minikube and the necessary tools pre-installed. To start a Codespace, click the "Code" button in the repository and select "Open with Codespaces". Once the Codespace is ready, you will see a `minikube.log` file showing up in the root of the repository. The Codespace will automatically start a Minikube cluster with three nodes. Wait until you see a message similar to the following in the `minikube.log` file:
+To run the Minikube demos in GitHub Codespaces, you can use the provided `devcontainer.json` configuration. This configuration sets up a development environment with Minikube and the necessary tools pre-installed. To start a Codespace, click the "Code" button in the repository, switch to the "Codespaces" tab, click the three dots, and select "New with options". Then make sure to change the machine type to `4-core` (this is needed to run the Istio demo) and click "Create Codespace".
+
+Once the Codespace is ready, you will see a `minikube.log` file showing up in the root of the repository. The Codespace will automatically start a Minikube cluster with three nodes. Wait until you see a message similar to the following in the `minikube.log` file:
 
 ```
 * Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
@@ -34,7 +36,7 @@ minikube status
 In case Minikube is not running or did not start after your Codespace timed out, you can start it manually by running the following command:
 
 ```bash
-minikube start --nodes=3
+minikube start --memory=8192 --cpus=4 --nodes=3 
 ```
 
 When everything is working, you should open a second terminal in the Codespace (click the "+" button in the terminal tab) and run `k9s` to visualize the cluster resources. You can switch between the two terminals using the terminal tab at the bottom of the Codespace window.
