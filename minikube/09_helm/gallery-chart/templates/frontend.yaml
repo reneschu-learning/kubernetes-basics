@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-frontend
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-frontend
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-frontend
+    spec:
+      containers:
+      - name: gallery
+        image: rsdemos.azurecr.io/picture-gallery:2.0.1
+        imagePullPolicy: {{ .Values.frontend.imagePullPolicy }}
+        ports:
+        - containerPort: 80
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        {{- if .Values.frontend.probes.startup.enabled }}
+        startupProbe:
+          httpGet:
+            path: {{ .Values.frontend.probes.startup.path }}
+            port: {{ .Values.frontend.probes.startup.port }}
+          failureThreshold: {{ .Values.frontend.probes.startup.failureThreshold }}
+          periodSeconds: {{ .Values.frontend.probes.startup.periodSeconds }}
+        {{- end }}
+        {{- if .Values.frontend.probes.liveness.enabled }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.frontend.probes.liveness.path }}
+            port: {{ .Values.frontend.probes.liveness.port }}
+          failureThreshold: {{ .Values.frontend.probes.liveness.failureThreshold }}
+          periodSeconds: {{ .Values.frontend.probes.liveness.periodSeconds }}
+        {{- end }}
+        {{- if .Values.frontend.probes.readiness.enabled }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.frontend.probes.readiness.path }}
+            port: {{ .Values.frontend.probes.readiness.port }}
+          failureThreshold: {{ .Values.frontend.probes.readiness.failureThreshold }}
+          periodSeconds: {{ .Values.frontend.probes.readiness.periodSeconds }}
+        {{- end }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-config
+        - secretRef:
+            name: {{ .Release.Name }}-secrets
+        volumeMounts:
+          - name: configmap-vol
+            mountPath: '/conf'
+      volumes:
+        - name: configmap-vol
+          configMap:
+            name: {{ .Release.Name }}-config-files

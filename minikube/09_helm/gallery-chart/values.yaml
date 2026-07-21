@@ -1,0 +1,36 @@
+frontend:
+  replicaCount: 3
+  publicPort: 8080
+  imagePullPolicy: IfNotPresent
+  probes:
+    startup:
+      enabled: true
+      path: /health
+      port: 80
+      failureThreshold: 10
+      periodSeconds: 5
+    liveness:
+      enabled: true
+      path: /health
+      port: 80
+      failureThreshold: 3
+      periodSeconds: 10
+    readiness:
+      enabled: true
+      path: /health
+      port: 80
+      failureThreshold: 2
+      periodSeconds: 3
+
+backend:
+  replicaCount: 2
+  internalPort: 9000
+  imagePullPolicy: IfNotPresent
+
+resources:
+  requests:
+    memory: 64Mi
+    cpu: 250m
+  limits:
+    memory: 128Mi
+    cpu: 500m

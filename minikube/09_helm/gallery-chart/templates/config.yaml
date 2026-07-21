@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+data:
+  CONFIG_VAR1: Some value from ConfigMap
+  CONFIG_FILE: '/conf/config.json'
+  CONFIG_FILE_VOL: '/conf/hostData.json'
+  LOG_FILE: '/logs/log.txt'
+  BACKEND_SERVICE: 'http://{{ .Release.Name }}-backend-svc:{{ .Values.backend.internalPort }}'

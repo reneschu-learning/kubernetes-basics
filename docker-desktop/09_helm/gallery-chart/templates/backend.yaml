@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-backend
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-backend
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-backend
+    spec:
+      containers:
+      - name: backend
+        image: rsdemos.azurecr.io/picture-gallery-backend:1.0.0
+        imagePullPolicy: {{ .Values.backend.imagePullPolicy }}
+        ports:
+        - containerPort: 8000
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-config
+        volumeMounts:
+        - name: logs
+          mountPath: '/logs'
+        - name: content
+          mountPath: '/conf/hostData.json'
+      - name: busybox
+        image: busybox
+        command: ['sh', '-c', 'touch /logs/log.txt && tail -n+1 -F /logs/log.txt']
+        volumeMounts:
+        - name: logs
+          mountPath: '/logs'
+      volumes:
+      - name: logs
+        emptyDir: {}
+      - name: content
+        hostPath:
+          path: '/tmp/hostData.json'
+          type: FileOrCreate
