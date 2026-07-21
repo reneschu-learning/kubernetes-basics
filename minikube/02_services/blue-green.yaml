@@ -6,7 +6,7 @@ spec:
   type: LoadBalancer
   selector:
     app: gallery
-    version: v2
+    version: v1
   ports:
   - port: 8080      # The port on which the service listens
     targetPort: 80  # The target port that is exposed by your POD(s)

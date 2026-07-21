@@ -4,7 +4,6 @@ metadata:
   name: gallery-svc
 spec:
   type: LoadBalancer
-  internalTrafficPolicy: Cluster
   selector:
     app: gallery
   ports:
