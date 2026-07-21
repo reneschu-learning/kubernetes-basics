@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-resources
+spec:
+  limits:
+  - default:
+      memory: 256Mi
+      cpu: 750m
+    defaultRequest:
+      memory: 32Mi
+      cpu: 125m
+    max:
+      memory: 500Mi
+      cpu: 1000m
+    min:
+      memory: 32Mi
+      cpu: 100m
+    type: Container
