@@ -65,14 +65,13 @@ Deploy the ConfigMap and deploy and restart the Deployment using the following c
 ```bash
 kubectl apply -f config-map-volume.yaml
 kubectl apply -f deployment-config-map-volume.yaml
-kubectl rollout restart deployment gallery-dep
 minikube tunnel
 
 # Codespace: in a second terminal, start the proxy for the service
 socat TCP-LISTEN:8080,fork TCP:<external-ip service>:8080
 ```
 
-Browse to `http://localhost:8080` (or follow the popup)and check the `Config` tab again. Now, the variable `CONFIG_FILE` points to a configuration file that exists, so you will see the contents of the file in the field `CONFIG_FILE content`. **Note:** We will discuss Volumes in more detail later in this module.
+In this case, you don't need to restart the deployment because we changed the deployment manifest by adding the config mag volume. This automatically causes the deployment to restart the Pods. Browse to `http://localhost:8080` (or follow the popup)and check the `Config` tab again. Now, the variable `CONFIG_FILE` points to a configuration file that exists, so you will see the contents of the file in the field `CONFIG_FILE content`. **Note:** We will discuss Volumes in more detail later in this module.
 
 When you mount a ConfigMap as a volume and later change the contents of the ConfigMap, Kubernetes will update the contents of the volume in the container. This is different from using environment variables, where the values are set at the time of container creation and do not change when the ConfigMap changes. Since our sample application is based on React and runs in the Browser (no server-side code), it cannot  automatically update the content of the mounted ConfigMap file. However, if you were to use a server-side application, such as Node.js or Python, it would be able to read the updated values from the ConfigMap without needing to restart the Deployment.
 
@@ -94,7 +93,6 @@ Deploy the Secret and deploy and restart the Deployment using the following comm
 ```bash
 kubectl apply -f secret.yaml
 kubectl apply -f deployment-cmv-secret.yaml
-kubectl rollout restart deployment gallery-dep
 minikube tunnel
 
 # Codespace: in a second terminal, start the proxy for the service

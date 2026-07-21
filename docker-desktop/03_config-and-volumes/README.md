@@ -48,15 +48,14 @@ If you now refresh the web page and check the `Config` tab again, you will see t
 
 You can also use ConfigMaps to mount configuration files into containers. Take a look at the [config-map-volume.yaml](config-map-volume.yaml) file, which creates a ConfigMap named `gallery-config-files` with a key-value pair that contains the contents of a configuration file named `config.json`. The value of the key is the contents of the file. Next, look at the [deployment-config-map-volume.yaml](deployment-config-map-volume.yaml) file, in which we have added a volume that mounts the `gallery-config-files` ConfigMap into the container at the path `/conf`. This allows the application to access the configuration file as a regular file.
 
-Deploy the ConfigMap and deploy and restart the Deployment using the following command:
+Deploy the ConfigMap and Deployment using the following command:
 
 ```bash
 kubectl apply -f config-map-volume.yaml
 kubectl apply -f deployment-config-map-volume.yaml
-kubectl rollout restart deployment gallery-dep
 ```
 
-Browse to `http://localhost:8080` and check the `Config` tab again. Now, the variable `CONFIG_FILE` points to a configuration file that exists, so you will see the contents of the file in the field `CONFIG_FILE content`. **Note:** We will discuss Volumes in more detail later in this module.
+In this case, you don't need to restart the deployment because we changed the deployment manifest by adding the config mag volume. This automatically causes the deployment to restart the Pods. Browse to `http://localhost:8080` and check the `Config` tab again. Now, the variable `CONFIG_FILE` points to a configuration file that exists, so you will see the contents of the file in the field `CONFIG_FILE content`. **Note:** We will discuss Volumes in more detail later in this module.
 
 When you mount a ConfigMap as a volume and later change the contents of the ConfigMap, Kubernetes will update the contents of the volume in the container. This is different from using environment variables, where the values are set at the time of container creation and do not change when the ConfigMap changes. Since our sample application is based on React and runs in the Browser (no server-side code), it cannot  automatically update the content of the mounted ConfigMap file. However, if you were to use a server-side application, such as Node.js or Python, it would be able to read the updated values from the ConfigMap without needing to restart the Deployment.
 
@@ -76,7 +75,6 @@ Deploy the Secret and deploy and restart the Deployment using the following comm
 ```bash
 kubectl apply -f secret.yaml
 kubectl apply -f deployment-cmv-secret.yaml
-kubectl rollout restart deployment gallery-dep
 ```
 
 Navigate to `http://localhost:8080` and check the `Config` tab again. Now, the variable `SECRET1` shows the value of the secret. Even though the value of the secret is base64-encoded, the web page shows the decoded value of the secret. Before creating the environment variable, Kubernetes decodes the value of the secret.
