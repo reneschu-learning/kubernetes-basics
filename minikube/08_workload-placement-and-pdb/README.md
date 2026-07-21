@@ -27,10 +27,11 @@ List the Pods in `k9s` to see that all three replicas of the `gallery-dep` Deplo
 ## Taints and Tolerations
 Taints and Tolerations provide a more flexible way to control workload placement. A Taint is applied to a node and allows you to repel certain Pods from being scheduled on that node unless the Pod has a matching Toleration. This is useful for scenarios where you want to dedicate certain nodes for specific workloads or to prevent certain workloads from running on specific nodes.
 
-Let's apply a Taint to the `minikube-m02` node to repel all Pods except those that have a matching Toleration. You can do this using the following command:
+Let's apply a Taint to the `minikube-m02` node to repel all Pods except those that have a matching Toleration. We will also apply a taint to the `minikube` node that matches what most other Kubernetes implementations have on the control plane nodes. You can do this using the following commands:
 
 ```bash
 kubectl taint nodes minikube-m02 workloads=frontend:NoSchedule
+kubectl taint nodes minikube node-role.kubernetes.io/control-plane=:NoSchedule
 ```
 
 Watch the Pods from the `gallery-dep` Deployment in `k9s`. So far, nothing happend because the Pods are already running on the `minikube-m02` node and the Taint effect only applies to new Pods (`NoSchedule`). However, when you try to scale the Deployment (e.g., `kubectl scale deployment gallery-dep --replicas=5`), you will see that the new Pods are stuck in a pending state because they cannot be scheduled on the `minikube-m02` node due to the Taint. In addition, Kubernetes cannot schedule them on another node because the `nodeSelector`. You can see the error when describing the Pods in `k9s` (`d` key).
@@ -90,7 +91,7 @@ Let's look at a small example of Pod Anti-Affinity. First, deploy the [app.yaml]
 kubectl apply -f app.yaml
 ```
 
-The manifest deploys a frontend and backend with a single Pod each. It is most likely that both Pods are scheduled on the same node. You can check this in `k9s`. Now, let's add a Pod Anti-Affinity rule to the backend Deployment to ensure that the backend Pod is not scheduled on the same node as the frontend Pod. Take a look at the [app-anti-affinity.yaml](app-anti-affinity.yaml) file and notice the `affinity` property in the `spec` section of the `template`. You can apply it using the following command:
+The manifest deploys a frontend and backend with a single Pod each. It is most likely that both Pods are scheduled on the same node (if not, delete the Deployment and deploy again). You can check this in `k9s`. Now, let's add a Pod Anti-Affinity rule to the backend Deployment to ensure that the backend Pod is not scheduled on the same node as the frontend Pod. Take a look at the [app-anti-affinity.yaml](app-anti-affinity.yaml) file and notice the `affinity` property in the `spec` section of the `template`. You can apply it using the following command:
 
 ```bash
 kubectl apply -f app-anti-affinity.yaml

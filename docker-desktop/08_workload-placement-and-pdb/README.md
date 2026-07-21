@@ -90,7 +90,7 @@ Let's look at a small example of Pod Anti-Affinity. First, deploy the [app.yaml]
 kubectl apply -f app.yaml
 ```
 
-The manifest deploys a frontend and backend with a single Pod each. It is most likely that both Pods are scheduled on the same node. You can check this in `k9s`. Now, let's add a Pod Anti-Affinity rule to the backend Deployment to ensure that the backend Pod is not scheduled on the same node as the frontend Pod. Take a look at the [app-anti-affinity.yaml](app-anti-affinity.yaml) file and notice the `affinity` property in the `spec` section of the `template`. You can apply it using the following command:
+The manifest deploys a frontend and backend with a single Pod each. It is most likely that both Pods are scheduled on the same node (if not, delete the Deployment and deploy again). You can check this in `k9s`. Now, let's add a Pod Anti-Affinity rule to the backend Deployment to ensure that the backend Pod is not scheduled on the same node as the frontend Pod. Take a look at the [app-anti-affinity.yaml](app-anti-affinity.yaml) file and notice the `affinity` property in the `spec` section of the `template`. You can apply it using the following command:
 
 ```bash
 kubectl apply -f app-anti-affinity.yaml
